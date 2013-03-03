@@ -23,7 +23,6 @@ class NamespaceFinder {
 
   private final Project project;
   private final DocumentImpl document;
-  private final EditorImpl editor;
   private final VirtualFile virtualFile;
   private FindManager findManager;
   private FindModel findModel;
@@ -35,7 +34,6 @@ class NamespaceFinder {
   public NamespaceFinder(Project project, DocumentImpl document, EditorImpl editor, VirtualFile virtualFile) {
     this.project = project;
     this.document = document;
-    this.editor = editor;
     this.virtualFile = virtualFile;
   }
 
