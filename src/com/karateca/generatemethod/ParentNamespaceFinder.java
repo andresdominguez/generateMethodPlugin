@@ -25,11 +25,10 @@ class ParentNamespaceFinder {
   private final DocumentImpl document;
   private final VirtualFile virtualFile;
   private FindManager findManager;
-  private FindModel findModel;
+
   private String currentNamespace;
 
   private final EventDispatcher<ChangeListener> myEventDispatcher = EventDispatcher.create(ChangeListener.class);
-  private final Pattern REQUIRE_PATTERN = Pattern.compile("(goog.provide\\(['\"]([\\w.]+))(['\"])");
   private String parentNamespace;
 
   public ParentNamespaceFinder(Project project, DocumentImpl document, EditorImpl editor, VirtualFile virtualFile) {
@@ -46,37 +45,20 @@ class ParentNamespaceFinder {
     return parentNamespace;
   }
 
-  FindModel createFindModel() {
-    findManager = FindManager.getInstance(project);
-    FindModel clone = (FindModel) findManager.getFindInFileModel().clone();
-    clone.setFindAll(true);
-    clone.setFromCursor(true);
-    clone.setForward(true);
-    clone.setWholeWordsOnly(false);
-    clone.setCaseSensitive(true);
-    clone.setSearchHighlighters(true);
-    clone.setPreserveCase(false);
-
-    return clone;
-  }
-
   public void findParentClass() {
-    findModel = createFindModel();
-    findModel.setMultiline(true);
-    findModel.setRegularExpressions(true);
-
     ApplicationManager.getApplication().runReadAction(new Runnable() {
       @Override
       public void run() {
         if (findParentNamespace()) {
           broadcastEvent("ParentNamespaceFound");
         }
-
       }
     });
   }
 
   private boolean findParentNamespace() {
+    FindModel findModel = createFindModel();
+
     // TODO: cannot figure out how to use the reg-exp search. Do a two part search instead.
     CharSequence text = document.getCharsSequence();
 
@@ -112,6 +94,22 @@ class ParentNamespaceFinder {
     parentNamespace = matcher.group(4);
 
     return true;
+  }
+
+  FindModel createFindModel() {
+    findManager = FindManager.getInstance(project);
+    FindModel clone = (FindModel) findManager.getFindInFileModel().clone();
+    clone.setFindAll(true);
+    clone.setFromCursor(true);
+    clone.setForward(true);
+    clone.setMultiline(true);
+    clone.setRegularExpressions(true);
+    clone.setWholeWordsOnly(false);
+    clone.setCaseSensitive(true);
+    clone.setSearchHighlighters(true);
+    clone.setPreserveCase(false);
+
+    return clone;
   }
 
   private void broadcastEvent(String eventName) {
