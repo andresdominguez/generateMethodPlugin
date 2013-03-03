@@ -22,6 +22,11 @@
   <project-components></project-components>
 
   <actions>
+      <action id="generateMethod" class="com.karateca.generatemethod.GenerateMethodAction" text="Generate method"
+              description="Generate a new method">
+          <add-to-group group-id="GenerateGroup" anchor="last"/>
+          <keyboard-shortcut keymap="$default" first-keystroke="shift meta G"/>
+      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij"></extensions>
