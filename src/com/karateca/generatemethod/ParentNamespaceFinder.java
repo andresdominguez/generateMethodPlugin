@@ -81,8 +81,8 @@ class ParentNamespaceFinder {
 
     // Get the whole inherits stmt and extract the current namespace and the
     // parent namespace.
-    String inheritsStmt = document.getText(new TextRange(startOffset, result.getEndOffset()))
-            .replaceAll("[\\n\\s]*", "");
+    TextRange textRange = new TextRange(startOffset, result.getEndOffset());
+    String inheritsStmt = document.getText(textRange).replaceAll("[\\n\\s]*", "");
 
     String namespaceRegExp = "(goog.inherits\\()([\\w.]+)(,)([\\w.]+)";
     Matcher matcher = Pattern.compile(namespaceRegExp).matcher(inheritsStmt);
