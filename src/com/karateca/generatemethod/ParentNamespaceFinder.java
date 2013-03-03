@@ -17,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Used to find the closure provide statement to figure out the namespace.
+ * Find the namespace for the current file and the namespace for the parent.
  */
 class ParentNamespaceFinder {
 
@@ -62,7 +62,7 @@ class ParentNamespaceFinder {
     // TODO: cannot figure out how to use the reg-exp search. Do a two part search instead.
     CharSequence text = document.getCharsSequence();
 
-    // Find goog.inherits first.
+    // Find goog.inherits first from the beginning.
     findModel.setStringToFind("goog.inherits(");
     FindResult result = findManager.findString(text, 0, findModel, virtualFile);
     if (!result.isStringFound()) {
@@ -96,7 +96,7 @@ class ParentNamespaceFinder {
     return true;
   }
 
-  FindModel createFindModel() {
+  private FindModel createFindModel() {
     findManager = FindManager.getInstance(project);
     FindModel clone = (FindModel) findManager.getFindInFileModel().clone();
     clone.setFindAll(true);
