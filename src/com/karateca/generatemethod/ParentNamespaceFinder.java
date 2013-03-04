@@ -7,12 +7,18 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ContentIterator;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.util.EventDispatcher;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,16 +30,19 @@ class ParentNamespaceFinder {
   private final Project project;
   private final DocumentImpl document;
   private final VirtualFile virtualFile;
+  private final EditorImpl editor;
   private FindManager findManager;
 
   private String currentNamespace;
 
   private final EventDispatcher<ChangeListener> myEventDispatcher = EventDispatcher.create(ChangeListener.class);
   private String parentNamespace;
+  private List<String> methodNames;
 
   public ParentNamespaceFinder(Project project, DocumentImpl document, EditorImpl editor, VirtualFile virtualFile) {
     this.project = project;
     this.document = document;
+    this.editor = editor;
     this.virtualFile = virtualFile;
   }
 
@@ -45,15 +54,97 @@ class ParentNamespaceFinder {
     return parentNamespace;
   }
 
+  public List<String> getMethodNames() {
+    return methodNames;
+  }
+
   public void findParentClass() {
     ApplicationManager.getApplication().runReadAction(new Runnable() {
       @Override
       public void run() {
-        if (findParentNamespace()) {
+        if (!findParentNamespace()) {
+          return;
+        }
+
+        VirtualFile parentFile = findParentFile();
+        if (parentFile == null) {
+          return;
+        }
+
+        try {
+          methodNames = getMethodNames(parentFile);
           broadcastEvent("ParentNamespaceFound");
+        } catch (IOException e) {
+          System.err.println("Error reading file " + virtualFile.getName());
+          e.printStackTrace(System.err);
         }
       }
     });
+  }
+
+  private VirtualFile findParentFile() {
+    final VirtualFile[] parentFile = {null};
+
+    ProjectRootManager.getInstance(editor.getProject()).getFileIndex().iterateContent(new ContentIterator() {
+      @Override
+      public boolean processFile(VirtualFile virtualFile) {
+        boolean parentFileFound = false;
+        try {
+          parentFileFound = fileProvidesNamespace(virtualFile, parentNamespace);
+        } catch (IOException e) {
+          System.err.println("Error reading file " + virtualFile.getName());
+          e.printStackTrace(System.err);
+        }
+
+        if (parentFileFound) {
+          parentFile[0] = virtualFile;
+        }
+
+        // Stop the search.
+        return !parentFileFound;
+      }
+    });
+
+    return parentFile[0];
+  }
+
+  /**
+   * Search for the file providing the namespace.
+   *
+   * @param virtualFile
+   * @param parentNamespace
+   * @return
+   */
+  private boolean fileProvidesNamespace(VirtualFile virtualFile, String parentNamespace) throws IOException {
+    String provideSearchLine = "goog.provide('" + parentNamespace;
+    String fileName = virtualFile.getName();
+
+    // Ignore non-js files.
+    if (!fileName.endsWith(".js")) {
+      return false;
+    }
+
+    String fileContents = getFileContents(virtualFile);
+    return fileContents.contains(provideSearchLine);
+  }
+
+  private String getFileContents(VirtualFile virtualFile) throws IOException {
+    return new String(virtualFile.contentsToByteArray());
+  }
+
+  private List<String> getMethodNames(VirtualFile virtualFile) throws IOException {
+    List<String> result = new ArrayList<String>();
+
+    String fileContents = getFileContents(virtualFile);
+    String methodPattern = String.format("(%s.prototype.)([\\w]+)", parentNamespace);
+
+    Pattern pattern = Pattern.compile(methodPattern);
+    Matcher matcher = pattern.matcher(fileContents);
+    while (matcher.find()) {
+      result.add(matcher.group(2));
+    }
+
+    return result;
   }
 
   private boolean findParentNamespace() {
