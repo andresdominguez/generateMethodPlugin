@@ -135,12 +135,16 @@ class ParentNamespaceFinder {
     List<Function> result = new ArrayList<Function>();
 
     String fileContents = getFileContents(virtualFile);
-    String methodPattern = String.format("(%s.prototype.)([\\w]+)", parentNamespace);
+    String regexp = "(%s.prototype.)([\\w]+)(\\s*=\\s*function\\s*\\()" +
+            "([\\w\\s,]*)(\\))";
+    String methodPattern = String.format(regexp, parentNamespace);
 
     Pattern pattern = Pattern.compile(methodPattern);
     Matcher matcher = pattern.matcher(fileContents);
     while (matcher.find()) {
-      result.add(new Function(matcher.group(2), null));
+      String name = matcher.group(2);
+      String arguments = matcher.group(4);
+      result.add(new Function(name, arguments));
     }
 
     return result;

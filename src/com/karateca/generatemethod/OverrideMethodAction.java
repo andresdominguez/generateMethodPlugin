@@ -66,7 +66,7 @@ public class OverrideMethodAction extends AnAction {
             .setItemChoosenCallback(new Runnable() {
               public void run() {
                 if (jbList.getSelectedValue() != null) {
-                  addNewMethod(jbList.getSelectedValue());
+                  addNewMethod((Function) jbList.getSelectedValue());
                 }
               }
             })
@@ -76,20 +76,28 @@ public class OverrideMethodAction extends AnAction {
 
   /**
    * Create a new method that will override the parent.
-   * @param selectedMethodName The name of the method that you want ot override.
+   *
+   * @param function The method that you want ot override.
    */
-  private void addNewMethod(Object selectedMethodName) {
-    String functionFormat = "%s.prototype." + selectedMethodName;
-    String newMethodName = String.format(functionFormat, namespaceFinder.getCurrentNamespace());
-    String parentMethodName = String.format(functionFormat, namespaceFinder.getParentNamespace());
+  private void addNewMethod(Function function) {
+    String fnNameFormat = "%s.prototype." + function.getName();
+    String methodPrototype = String.format(fnNameFormat, namespaceFinder.getCurrentNamespace());
+    String parentMethodPrototype = String.format(fnNameFormat, namespaceFinder.getParentNamespace());
+
+
+    String arguments = function.getArguments();
+    String callArguments = arguments;
+    if (callArguments.trim().length() > 0) {
+      callArguments = ", " + callArguments;
+    }
 
     final String methodTemplate = String.format("/**\n" +
             " * @override\n" +
             " */\n" +
-            "%s = function() {\n" +
-            "  // TODO: method block\n" +
-            "  %s.apply(this, arguments);\n" +
-            "};\n", newMethodName, parentMethodName);
+            "%s = function(%s) {\n" +
+            "  // TODO: override function\n" +
+            "  %s.call(this%s);\n" +
+            "};\n", methodPrototype, arguments, parentMethodPrototype, callArguments);
 
     CommandUtil.runCommand(project, new Runnable() {
       @Override
