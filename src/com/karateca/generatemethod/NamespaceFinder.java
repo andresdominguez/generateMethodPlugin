@@ -31,7 +31,7 @@ class NamespaceFinder {
   private final EventDispatcher<ChangeListener> myEventDispatcher = EventDispatcher.create(ChangeListener.class);
   private final Pattern REQUIRE_PATTERN = Pattern.compile("(goog.provide\\(['\"]([\\w.]+))(['\"])");
 
-  public NamespaceFinder(Project project, DocumentImpl document, EditorImpl editor, VirtualFile virtualFile) {
+  public NamespaceFinder(Project project, DocumentImpl document, VirtualFile virtualFile) {
     this.project = project;
     this.document = document;
     this.virtualFile = virtualFile;

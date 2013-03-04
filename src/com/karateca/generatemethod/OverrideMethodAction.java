@@ -12,7 +12,6 @@ import com.intellij.ui.components.JBList;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -51,6 +50,9 @@ public class OverrideMethodAction extends AnAction {
     namespaceFinder.findParentClass();
   }
 
+  /**
+   * Show the dialog to select the method to override.
+   */
   private void showDialog() {
     List<String> methodNames = namespaceFinder.getMethodNames();
 
@@ -70,30 +72,31 @@ public class OverrideMethodAction extends AnAction {
             })
             .createPopup()
             .showCenteredInCurrentWindow(project);
-
   }
 
+  /**
+   * Create a new method that will override the parent.
+   * @param selectedMethodName The name of the method that you want ot override.
+   */
   private void addNewMethod(Object selectedMethodName) {
-    String currentNamespace = namespaceFinder.getCurrentNamespace();
-    String parentNamespace = namespaceFinder.getParentNamespace();
-    final String methodName = String.format("%s.prototype.%s", currentNamespace, selectedMethodName);
-    final String parentMethodName = String.format("%s.prototype.%s", parentNamespace, selectedMethodName);
+    String functionFormat = "%s.prototype." + selectedMethodName;
+    String newMethodName = String.format(functionFormat, namespaceFinder.getCurrentNamespace());
+    String parentMethodName = String.format(functionFormat, namespaceFinder.getParentNamespace());
 
+    final String methodTemplate = String.format("/**\n" +
+            " * @override\n" +
+            " */\n" +
+            "%s = function() {\n" +
+            "  // TODO: method block\n" +
+            "  %s.apply(this, arguments);\n" +
+            "};\n", newMethodName, parentMethodName);
 
     CommandUtil.runCommand(project, new Runnable() {
       @Override
       public void run() {
         int offset = editor.getCaretModel().getOffset();
-
-        String methodTemplate = String.format("/**\n" +
-                " * @override\n" +
-                " */\n" +
-                "%s = function() {\n" +
-                "  // TODO: method block\n" +
-                "  %s.apply(this, arguments);\n" +
-                "};\n", methodName, parentMethodName);
         document.replaceString(offset, offset, methodTemplate);
       }
-    }, "Added method");
+    });
   }
 }

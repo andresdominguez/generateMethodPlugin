@@ -22,12 +22,15 @@
   <project-components></project-components>
 
   <actions>
-      <action id="generateMethod" class="com.karateca.generatemethod.GenerateMethodAction" text="Generate method"
+      <action id="generateMethod"
+              class="com.karateca.generatemethod.GenerateMethodAction"
+              text="Generate method"
               description="Generate a new method">
           <add-to-group group-id="GenerateGroup" anchor="last"/>
-          <keyboard-shortcut keymap="$default" first-keystroke="shift meta G"/>
       </action>
-      <action id="oerrideMethod" class="com.karateca.generatemethod.OverrideMethodAction" text="Override method"
+      <action id="overrideMethod"
+              class="com.karateca.generatemethod.OverrideMethodAction"
+              text="Override method"
               description="Override a method">
           <add-to-group group-id="GenerateGroup" anchor="last"/>
       </action>

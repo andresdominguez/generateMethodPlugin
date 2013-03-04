@@ -33,7 +33,7 @@ public class GenerateMethodAction extends AnAction {
     VirtualFile virtualFile = actionEvent.getData(PlatformDataKeys.VIRTUAL_FILE);
     document = (DocumentImpl) editor.getDocument();
 
-    namespaceFinder = new NamespaceFinder(project, document, editor, virtualFile);
+    namespaceFinder = new NamespaceFinder(project, document, virtualFile);
 
     // Async callback to get the search results for it( and describe(
     namespaceFinder.addResultsReadyListener(new ChangeListener() {
@@ -67,6 +67,6 @@ public class GenerateMethodAction extends AnAction {
         // Put the caret after "protoype."
         editor.getCaretModel().moveToOffset(offset + namespace.length() + 11);
       }
-    }, "Added method");
+    });
   }
 }

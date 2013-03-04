@@ -7,14 +7,14 @@ import com.intellij.openapi.project.Project;
 /**
  * @author Andres Dominguez.
  */
-public class CommandUtil {
+class CommandUtil {
 
-  public static void runCommand(Project project, final Runnable runnable, String operationName) {
+  public static void runCommand(Project project, final Runnable runnable) {
     CommandProcessor.getInstance().executeCommand(project, new Runnable() {
       @Override
       public void run() {
         ApplicationManager.getApplication().runWriteAction(runnable);
       }
-    }, operationName, null);
+    }, "Added method", null);
   }
 }
