@@ -136,10 +136,10 @@ class ParentNamespaceFinder {
 
     String fileContents = getFileContents(virtualFile);
     String regexp = "(%s.prototype.)([\\w]+)(\\s*=\\s*function\\s*\\()" +
-            "([\\w\\s,]*)(\\))";
+            "([\\w\\s\\n,]*)(\\))";
     String methodPattern = String.format(regexp, parentNamespace);
 
-    Pattern pattern = Pattern.compile(methodPattern);
+    Pattern pattern = Pattern.compile(methodPattern, Pattern.MULTILINE);
     Matcher matcher = pattern.matcher(fileContents);
     while (matcher.find()) {
       String name = matcher.group(2);
