@@ -61,7 +61,7 @@ public class GenerateMethodAction extends AnAction {
 
         String methodTemplate = String.format("%s.prototype. = function() {\n" +
                 "  // TODO: method block\n" +
-                "\n};", namespace);
+                "};", namespace);
         document.replaceString(offset, offset, methodTemplate);
 
         // Put the caret after "protoype."
