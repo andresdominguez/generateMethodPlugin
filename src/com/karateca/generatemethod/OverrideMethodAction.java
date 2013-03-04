@@ -54,10 +54,10 @@ public class OverrideMethodAction extends AnAction {
    * Show the dialog to select the method to override.
    */
   private void showDialog() {
-    List<String> methodNames = namespaceFinder.getMethodNames();
+    List<Function> functionNames = namespaceFinder.getFunctionNames();
 
     // Select the closest element found from the current position.
-    final JBList jbList = new JBList(methodNames.toArray());
+    final JBList jbList = new JBList(functionNames.toArray());
 
     // Open a pop-up to select which describe() or it() you want to change.
     JBPopupFactory.getInstance()

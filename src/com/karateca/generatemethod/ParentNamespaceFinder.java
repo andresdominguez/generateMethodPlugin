@@ -11,7 +11,6 @@ import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.util.EventDispatcher;
 
 import javax.swing.event.ChangeEvent;
@@ -37,7 +36,7 @@ class ParentNamespaceFinder {
 
   private final EventDispatcher<ChangeListener> myEventDispatcher = EventDispatcher.create(ChangeListener.class);
   private String parentNamespace;
-  private List<String> methodNames;
+  private List<Function> functionNames;
 
   public ParentNamespaceFinder(Project project, DocumentImpl document, EditorImpl editor, VirtualFile virtualFile) {
     this.project = project;
@@ -54,8 +53,8 @@ class ParentNamespaceFinder {
     return parentNamespace;
   }
 
-  public List<String> getMethodNames() {
-    return methodNames;
+  public List<Function> getFunctionNames() {
+    return functionNames;
   }
 
   public void findParentClass() {
@@ -72,7 +71,7 @@ class ParentNamespaceFinder {
         }
 
         try {
-          methodNames = getMethodNames(parentFile);
+          functionNames = getMethods(parentFile);
           broadcastEvent("ParentNamespaceFound");
         } catch (IOException e) {
           System.err.println("Error reading file " + virtualFile.getName());
@@ -132,8 +131,8 @@ class ParentNamespaceFinder {
     return new String(virtualFile.contentsToByteArray());
   }
 
-  private List<String> getMethodNames(VirtualFile virtualFile) throws IOException {
-    List<String> result = new ArrayList<String>();
+  private List<Function> getMethods(VirtualFile virtualFile) throws IOException {
+    List<Function> result = new ArrayList<Function>();
 
     String fileContents = getFileContents(virtualFile);
     String methodPattern = String.format("(%s.prototype.)([\\w]+)", parentNamespace);
@@ -141,7 +140,7 @@ class ParentNamespaceFinder {
     Pattern pattern = Pattern.compile(methodPattern);
     Matcher matcher = pattern.matcher(fileContents);
     while (matcher.find()) {
-      result.add(matcher.group(2));
+      result.add(new Function(matcher.group(2), null));
     }
 
     return result;
